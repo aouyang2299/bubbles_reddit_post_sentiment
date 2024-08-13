@@ -1,0 +1,126 @@
+---
+title: "bubbles final graphs"
+output: html_document
+date: "2024-03-17"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r}
+education <- read.csv("/Users/andyouyang/Documents/bubbles final.csv")
+
+education$Agree.Neutral.Disagree <- factor(education$Agree.Neutral.Disagree, levels = c("agree", "neutral", "disagree"))
+unique_rows <- education[!duplicated(education$Reddit.ink.to.post), ]
+```
+
+
+
+
+```{r}
+ggplot(unique_rows, aes(x = Post.Number, y = Total.Views, fill = Agree.Neutral.Disagree)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~ Agree.Neutral.Disagree, scales = "free_x") +
+  labs(x = "Post Number", y = "Total Views", title = "Total Views Across Subreddits by Sentiment of Post") +
+  facet_wrap(~ subreddit, scales = "free_x")
+
+custom_order <- c("Agree", "Neutral", "Disagree")
+
+unique_rows$Post.Number <- factor(unique_rows$Post.Number,
+                                         levels = unique(unique_rows$Post.Number[order(unique_rows$Agree.Neutral.Disagree, -unique_rows$Upvote.Rate....)]))
+
+ggplot(unique_rows, aes(x = Post.Number, y = Upvote.Rate...., fill = Agree.Neutral.Disagree)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~ subreddit, scales = "free_x") +
+  labs(x = "Post Number", y = "Upvote Rate", title = "Upvote Rate Across Subreddits by Sentiment of Post")
+```
+
+
+
+```{r}
+ggplot(exclude_no_comment, aes(x = Comment.word.count...use.chatgpt., color = as.factor(subreddit))) +
+  geom_density() +
+  # facet_wrap(~ subreddit) +
+  labs(x = "Comment Word Count", y = "Density", title = "Density Distributions of Comment Word Count by Subreddit", color = "Subreddit") +
+  theme_minimal()
+
+ggplot(exclude_no_comment, aes(x = Comment.word.count...use.chatgpt., color = as.factor(subreddit))) +
+  geom_boxplot() +
+  # facet_wrap(~ subreddit) +
+  labs(x = "", y = "Comment Word Count", title = "Comment Word Count by Subreddit", color = "Subreddit") +
+  theme_minimal()
+```
+
+```{r}
+ggplot(exclude_no_comment, aes(x = Degree.of.Agreement.in.comment..1..Strongly.Disagree..10..Strongly.Agree.., color = as.factor(Agree.Neutral.Disagree))) +
+  geom_density() +
+  facet_wrap(~ subreddit) +
+  labs(x = "Degree of Agreement in Comment (1: Strongly Disagree, 10: Strongly Agree)", y = "Density", title = "Level of Agreement from Comments Towards Original Post Sentiment", color = "Post Sentiment") +
+  theme_minimal()
+```
+generally, across both subreddits, more comments are in disagreement rather than neutral or in agreement
+
+
+in cmu, when the post is neutral, the comments have a lot of disagreement
+
+in a2c, when it is disagree post, the comments have a lot more disagree
+but in general, there is a lot 
+
+
+```{r}
+ggplot(exclude_no_comment, aes(x = Degree.of.Agreement.in.comment..1..Strongly.Disagree..10..Strongly.Agree.., 
+       y = Degree.of.Hostility..1..Very.Friendly..10..Very.Hostile., color = factor(subreddit))) +
+  geom_point() +
+  geom_smooth(se = FALSE, method = "loess", formula = y~x) +
+  labs(x = "Degree of Agreement (1. Strongly Disagree, 10. Strongly Agree)", 
+       y = "Degree of Hostility (1. Very Friendly, 10. Very Hostile)", 
+       title = "Degree of Hostility in Comment vs Degree of Agreement in Comment") +
+  scale_color_discrete()
+
+ggplot(exclude_no_comment, aes(x = Degree.of.Hostility..1..Very.Friendly..10..Very.Hostile., 
+       y = exclude_no_comment$Comment.word.count...use.chatgpt., color = factor(subreddit))) +
+  geom_point() +
+  geom_smooth(se = FALSE, method = "loess", formula = y~x) +
+  labs(x = "Degree of Hostility (1. Very Friendly, 10. Very Hostile)", 
+       y = "Comment Word Count", 
+       title = "Word Count of Comments vs Hostility of Comments")
+
+ggplot(exclude_no_comment, aes(x = Degree.of.Agreement.in.comment..1..Strongly.Disagree..10..Strongly.Agree.., 
+       y = exclude_no_comment$Comment.word.count...use.chatgpt., color = factor(subreddit))) +
+  geom_point() +
+  geom_smooth(se = FALSE, method = "loess", formula = y~x) +
+  labs(x = "Degree of Agreement (1. Strongly Disagree, 10. Strongly Agree)", 
+       y = "Comment Word Count", 
+       title = "Word Count of Comments vs Agreement of Comments")
+```
+
+increased agreement => less hostile
+more general subreddit decreases in hostility faster as agreement increases
+
+increased hostile => less words 
+increased agreement => more words
+cmu has a higher base level of word count for the comments
+
+# upvote count vs agree & upvote count vs hostile
+```{r}
+ggplot(exclude_no_comment, aes(x = Degree.of.Agreement.in.comment..1..Strongly.Disagree..10..Strongly.Agree.., 
+       y = exclude_no_comment$Comment.upvote.count, color = factor(subreddit))) +
+  geom_point() +
+  geom_smooth(se = FALSE, method = "loess", formula = y~x) +
+  labs(x = "Degree of Agreement (1. Strongly Disagree, 10. Strongly Agree)", 
+       y = "Comment Upvote Count", 
+       title = "Word Count of Comments vs Agreement of Comments")
+
+ggplot(exclude_no_comment, aes(x = Degree.of.Hostility..1..Very.Friendly..10..Very.Hostile., 
+       y = exclude_no_comment$Comment.upvote.count, color = factor(subreddit))) +
+  geom_point() +
+  geom_smooth(se = FALSE, method = "loess", formula = y~x) +
+  labs(x = "Degree of Agreement (1. Strongly Disagree, 10. Strongly Agree)", 
+       y = "Comment Upvote Count", 
+       title = "Word Count of Comments vs Agreement of Comments")
+```
+```
+

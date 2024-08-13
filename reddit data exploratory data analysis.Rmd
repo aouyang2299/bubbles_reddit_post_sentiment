@@ -1,0 +1,330 @@
+---
+title: "bubbles"
+output: html_document
+date: "2024-03-17"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+```
+
+
+```{r}
+education <- read.csv("/Users/andyouyang/Documents/bubbles final.csv")
+
+education$Agree.Neutral.Disagree <- factor(education$Agree.Neutral.Disagree, levels = c("agree", "neutral", "disagree"))
+unique_rows <- education[!duplicated(education$Reddit.ink.to.post), ]
+```
+
+
+# sentiment vs views
+```{r}
+
+# aggregrates the total, useless
+
+# ggplot(unique_rows, aes(x = Agree.Neutral.Disagree, y = Total.Views, fill = Agree.Neutral.Disagree)) +
+#   geom_bar(stat = "identity") +
+#   labs(x = "Agree/Neutral/Disagree", y = "Total Views") +
+#   theme_minimal()
+
+ggplot(unique_rows, aes(x = as.numeric(Agree.Neutral.Disagree), y = Total.Views, color = Agree.Neutral.Disagree)) +
+  geom_jitter(aes(color = as.factor(Agree.Neutral.Disagree)), width = 0.2, height = 0, alpha = 0.9) +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 2), se = FALSE, color = "black") +  # polynomial regr line, degree 2
+  labs(x = "Agree/Neutral/Disagree", y = "Total Views", title = "Total Views vs Sentiment of Post Towards Topic of CMU") +
+  scale_x_continuous(breaks = 1:3, labels = levels(unique_rows$Agree.Neutral.Disagree)) +  # x-axis breaks and labels 
+  scale_color_manual(values = c("red", "green", "blue")) +
+  theme_minimal() 
+
+
+ggplot(unique_rows, aes(x = as.numeric(Agree.Neutral.Disagree), y = Total.Views, color = as.factor(subreddit))) +
+  geom_jitter(aes(color = as.factor(subreddit)), width = 0.2, height = 0, alpha = 0.9) +
+  geom_smooth(data = subset(unique_rows, subreddit == "CMU"), method = "lm", formula = y ~ poly(x, 2), se = FALSE, color = "aquamarine3") +
+  geom_smooth(data = subset(unique_rows, subreddit == "ApplyingToCollege"), method = "lm", formula = y ~ poly(x, 2), se = FALSE, color = "coral3") +
+  labs(x = "Agree/Neutral/Disagree", y = "Total Views", title = "Total Views vs Sentiment of Post Towards Topic of CMU by 
+       Subreddit") +
+  scale_x_continuous(breaks = 1:3, labels = levels(unique_rows$Agree.Neutral.Disagree)) +  # Specify x-axis breaks and labels 
+  scale_color_manual(name = "Subreddit",
+                     values = c("CMU" = "aquamarine3", "ApplyingToCollege" = "coral3")) +  # Changing legend names
+  theme_minimal()
+
+# shows each one as bar
+ggplot(unique_rows, aes(x = Reddit.ink.to.post, y = Total.Views, fill = Agree.Neutral.Disagree)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~ Agree.Neutral.Disagree, scales = "free_x") +
+  labs(x = "", y = "Total Views") +
+  facet_wrap(~ subreddit, scales = "free_x") +
+  theme_minimal() +
+  theme(axis.text.x = element_blank(),    # Remove x-axis text
+        axis.title.x = element_blank())   # Remove x-axis title
+
+```
+
+```{r}
+
+ggplot(unique_rows, aes(x = as.factor(Agree.Neutral.Disagree), y = Total.Views, color = as.factor(Agree.Neutral.Disagree))) +
+  geom_boxplot(color = "gray") +  # Setting the color of the boxplot
+  geom_jitter(aes(color = as.factor(Agree.Neutral.Disagree)), width = 0.2, height = 0, alpha = 0.9) +
+  scale_color_manual(values = c("green", "red", "blue")) +  # Setting the colors for each boxplot
+  labs(x = "Agree/Neutral/Disagree", y = "Total Views") +
+  scale_x_discrete(labels = c("Agree", "Neutral", "Disagree")) +  
+  geom_smooth(method = "lm", formula = y ~ poly(as.numeric(x), 2), se = FALSE, aes(color = "black")) +  
+  theme_minimal()
+
+# cant add regression here
+```
+
+
+# sentiment vs upvote count
+``` {r}
+ggplot(unique_rows, aes(x = as.numeric(Agree.Neutral.Disagree), y = Upvote.count, color = Agree.Neutral.Disagree)) +
+  geom_jitter(aes(color = as.factor(Agree.Neutral.Disagree)), width = 0.2, height = 0, alpha = 0.9) +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 2), se = FALSE, color = "black") +  # Add a polynomial regression line of degree 2
+  labs(x = "Agree/Neutral/Disagree", y = "Upvote Count", title = "Upvote Count vs Sentiment of Post Towards Topic of CMU") +
+  scale_x_continuous(breaks = 1:3, labels = levels(unique_rows$Agree.Neutral.Disagree)) +  # Specify x-axis breaks and labels 
+  scale_color_manual(values = c("red", "green", "blue")) +
+  theme_minimal() 
+
+ggplot(unique_rows, aes(x = as.numeric(Agree.Neutral.Disagree), y = Upvote.count, color = as.factor(subreddit))) +
+  geom_jitter(aes(color = as.factor(subreddit)), width = 0.2, height = 0, alpha = 0.9) +
+  geom_smooth(data = subset(unique_rows, subreddit == "CMU"), method = "lm", formula = y ~ poly(x, 2), se = FALSE, color = "aquamarine3") +
+  geom_smooth(data = subset(unique_rows, subreddit == "ApplyingToCollege"), method = "lm", formula = y ~ poly(x, 2), se = FALSE, color = "coral3") +
+  labs(x = "Agree/Neutral/Disagree", y = "Upvote Count", title = "Upvote Count vs Sentiment of Post Towards Topic of CMU by 
+       Subreddit") +
+  scale_x_continuous(breaks = 1:3, labels = levels(unique_rows$Agree.Neutral.Disagree)) +  # Specify x-axis breaks and labels 
+  scale_color_manual(name = "Subreddit",
+                     values = c("CMU" = "aquamarine3", "ApplyingToCollege" = "coral3")) +  # Changing legend names
+  theme_minimal()
+
+```
+
+```{r}
+# ggplot(unique_rows, aes(x = as.numeric(Agree.Neutral.Disagree), y = Upvote.Rate...., color = Agree.Neutral.Disagree)) +
+#   geom_jitter(aes(color = as.factor(Agree.Neutral.Disagree)), width = 0.2, height = 0, alpha = 0.9) +
+#   geom_smooth(method = "lm", formula = y ~ poly(x, 2), se = FALSE, color = "black") +  # Add a polynomial regression line of degree 2
+#   labs(x = "Agree/Neutral/Disagree", y = "Upvote Rate", title = "Upvote Rate vs Sentiment of Post Towards Topic of CMU") +
+#   scale_x_continuous(breaks = 1:3, labels = levels(unique_rows$Agree.Neutral.Disagree)) +  # Specify x-axis breaks and labels 
+#   # scale_color_manual(values = c("red", "green", "blue")) +
+#   theme_minimal() 
+
+ggplot(unique_rows, aes(x = as.numeric(Agree.Neutral.Disagree), y = Upvote.Rate...., color = as.factor(subreddit))) +
+  geom_jitter(aes(color = as.factor(subreddit)), width = 0.2, height = 0, alpha = 0.9) +
+  geom_smooth(data = subset(unique_rows, subreddit == "CMU"), method = "lm", formula = y ~ poly(x, 2), se = FALSE, color = "aquamarine3") +
+  geom_smooth(data = subset(unique_rows, subreddit == "ApplyingToCollege"), method = "lm", formula = y ~ poly(x, 2), se = FALSE, color = "coral3") +
+  labs(x = "Agree/Neutral/Disagree", y = "Upvote Rate", title = "Upvote Rate vs Sentiment of Post Towards Topic of CMU by 
+       Subreddit") +
+  scale_x_continuous(breaks = 1:3, labels = levels(unique_rows$Agree.Neutral.Disagree)) +  # Specify x-axis breaks and labels 
+  scale_color_manual(name = "Subreddit",
+                     values = c("CMU" = "aquamarine3", "ApplyingToCollege" = "coral3")) +  # Changing legend names
+  theme_minimal()
+
+# ggplot(unique_rows, aes(x = Reddit.ink.to.post, y = unique_rows$Upvote.Rate...., fill = Agree.Neutral.Disagree)) +
+#   geom_bar(stat = "identity") +
+#   facet_wrap(~ Agree.Neutral.Disagree, scales = "free_x") +
+#   labs(x = "", y = "Total Views") +
+#   theme_minimal() +
+#   theme(axis.text.x = element_blank(),    # Remove x-axis text
+#         axis.title.x = element_blank())   # Remove x-axis title
+
+# reorder(Reddit.ink.to.post, Agree.Neutral.Disagree)
+
+ggplot(unique_rows, aes(x = Reddit.ink.to.post, y = Upvote.Rate...., fill = Agree.Neutral.Disagree)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~ subreddit, scales = "free_x") +
+  labs(x = "", y = "Upvote Rate") +
+  theme_minimal() +
+  theme(axis.text.x = element_blank(),    # Remove x-axis text
+        axis.title.x = element_blank())   # Remove x-axis title
+
+```
+
+```{r}
+# Define the custom order of levels
+custom_order <- c("Agree", "Neutral", "Disagree")
+
+# Reorder levels of Reddit.ink.to.post based on the custom order and Upvote Rate in decreasing order
+unique_rows$Reddit.ink.to.post <- factor(unique_rows$Reddit.ink.to.post,
+                                         levels = unique(unique_rows$Reddit.ink.to.post[order(unique_rows$Agree.Neutral.Disagree, -unique_rows$Upvote.Rate....)]))
+
+# Plot with reordered levels
+ggplot(unique_rows, aes(x = Reddit.ink.to.post, y = Upvote.Rate...., fill = Agree.Neutral.Disagree)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~ subreddit, scales = "free_x") +
+  labs(x = "", y = "Upvote Rate", title = "Upvote Rate Across Subreddits by Sentiment of Post") +
+  theme_minimal() +
+  theme(axis.text.x = element_blank())    # Remove x-axis text
+        # axis.title.x = element_blank())   # Remove x-axis title
+
+# # Plot with reordered levels
+# ggplot(unique_rows, aes(x = Post.Number, y = Upvote.Rate...., fill = Agree.Neutral.Disagree)) +
+#   geom_bar(stat = "identity") +
+#   facet_wrap(~ subreddit, scales = "free_x") +
+#   labs(x = "", y = "Upvote Rate", title = "Upvote Rate Across Subreddits by Sentiment of Post") +
+#   theme_minimal() +
+#   theme(axis.text.x = element_blank())    # Remove x-axis text
+#         # axis.title.x = element_blank())   # Remove x-axis title
+
+```
+
+
+
+
+
+```{r}
+
+exclude_no_comment <- education[!is.na(education$Comment.word.count...use.chatgpt.), ]
+# 
+# ggplot(exclude_no_comment, aes(x = as.numeric(Agree.Neutral.Disagree), y = Comment.word.count...use.chatgpt., color = Agree.Neutral.Disagree)) +
+#   geom_jitter(aes(color = as.factor(Agree.Neutral.Disagree)), width = 0.2, height = 0, alpha = 0.9) +
+#   geom_smooth(method = "lm", formula = y ~ poly(x, 2), se = FALSE, color = "black") +  # Add a polynomial regression line of degree 2
+#   labs(x = "Agree/Neutral/Disagree", y = "Upvote Rate", title = "Upvote Rate vs Sentiment of Post Towards Topic of CMU") +
+#   scale_x_continuous(breaks = 1:3, labels = levels(unique_rows$Agree.Neutral.Disagree)) +  # Specify x-axis breaks and labels 
+#   # scale_color_manual(values = c("red", "green", "blue")) +
+#   theme_minimal() 
+
+
+
+
+
+ggplot(exclude_no_comment, aes(x = as.numeric(Agree.Neutral.Disagree), y = Comment.word.count...use.chatgpt., color = as.factor(subreddit))) +
+  geom_jitter(aes(color = as.factor(subreddit)), width = 0.2, height = 0, alpha = 0.9) +
+  geom_smooth(data = subset(unique_rows, subreddit == "CMU"), method = "lm", formula = y ~ poly(x, 2), se = FALSE, color = "aquamarine3") +
+  geom_smooth(data = subset(unique_rows, subreddit == "ApplyingToCollege"), method = "lm", formula = y ~ poly(x, 2), se = FALSE, color = "coral3") +
+  labs(x = "Agree/Neutral/Disagree", y = "Upvote Rate", title = "Upvote Rate vs Sentiment of Post Towards Topic of CMU by 
+       Subreddit") +
+  scale_x_continuous(breaks = 1:3, labels = levels(unique_rows$Agree.Neutral.Disagree)) +  # Specify x-axis breaks and labels 
+  scale_color_manual(name = "Subreddit",
+                     values = c("CMU" = "aquamarine3", "ApplyingToCollege" = "coral3")) +  # Changing legend names
+  theme_minimal()
+
+
+# Define the custom order of levels
+custom_order <- c("Agree", "Neutral", "Disagree")
+
+# Reorder levels of Reddit.ink.to.post based on the custom order and Upvote Rate in decreasing order
+unique_rows$Reddit.ink.to.post <- factor(unique_rows$Reddit.ink.to.post,
+                                         levels = unique(unique_rows$Reddit.ink.to.post[order(unique_rows$Agree.Neutral.Disagree, -unique_rows$Upvote.Rate....)]))
+
+# Plot with reordered levels
+ggplot(exclude_no_comment, aes(x = Reddit.ink.to.post, y = Comment.word.count...use.chatgpt., color = as.factor(subreddit))) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~ subreddit, scales = "free_x") +
+  labs(x = "", y = "Upvote Rate", title = ) +
+  theme_minimal() +
+  theme(axis.text.x = element_blank())    # Remove x-axis text
+
+```
+
+``` {r}
+ggplot(exclude_no_comment, aes(x = Comment.word.count...use.chatgpt., color = as.factor(subreddit))) +
+  geom_boxplot() +
+  # facet_wrap(~ subreddit) +
+  labs(x = "", y = "Comment Word Count", title = "Comment Word Count by Post", color = "Subreddit") +
+  theme_minimal()
+
+ggplot(exclude_no_comment, aes(x = Comment.word.count...use.chatgpt., color = as.factor(subreddit))) +
+  geom_density() +
+  # facet_wrap(~ subreddit) +
+  labs(x = "", y = "Comment Word Count", title = "Comment Word Count by Post", color = "Subreddit") +
+  theme_minimal()
+  
+# library(ggridges)
+# 
+# ggplot(exclude_no_comment, aes(x = Comment.word.count...use.chatgpt., y = as.factor(subreddit), fill = as.factor(subreddit))) +
+#   geom_density_ridges(alpha = 0.5, scale = 0.7) +
+#   labs(x = "Comment Word Count", y = "Subreddit", title = "Ridgeline Plot of Comment Word Count by Subreddit") +
+#   theme_minimal()
+```
+
+
+```{r}
+library(ggridges)
+
+ggplot(exclude_no_comment, aes(x = Degree.of.Agreement.in.comment..1..Strongly.Disagree..10..Strongly.Agree.., color = as.factor(Agree.Neutral.Disagree))) +
+  geom_density() +
+  facet_wrap(~ subreddit) +
+  labs(x = "Degree of Agreement in Comment (1: Strongly Disagree, 10: Strongly Agree)", y = "Density", title = "Level of Agreement from Comments Towards Original Post Sentiment", color = "Post Sentiment") +
+  theme_minimal()
+```
+
+generally, across both subreddits, more comments are in disagreement rather than neutral or in agreement
+
+
+in cmu, when the post is neutral, the comments have a lot of disagreement
+
+in a2c, when it is disagree post, the comments have a lot more disagree
+but in general, there is a lot 
+
+
+
+```{r}
+ggplot(exclude_no_comment, aes(x = Degree.of.Agreement.in.comment..1..Strongly.Disagree..10..Strongly.Agree.., 
+       y = Degree.of.Hostility..1..Very.Friendly..10..Very.Hostile., color = factor(subreddit))) +
+  geom_point() +
+  geom_smooth(se = FALSE, method = "lm", formula = y~x) +
+  labs(x = "Degree of Agreement (1. Strongly Disagree, 10. Strongly Agree)", 
+       y = "Degree of Hostility (1. Very Friendly, 10. Very Hostile)", 
+       title = "Degree of Hostility in Comment vs Degree of Agreement in Comment") +
+  scale_color_discrete()
+
+ggplot(exclude_no_comment, aes(x = Degree.of.Hostility..1..Very.Friendly..10..Very.Hostile., 
+       y = exclude_no_comment$Comment.word.count...use.chatgpt., color = factor(subreddit))) +
+  geom_point() +
+  geom_smooth(se = FALSE, method = "lm", formula = y~x) +
+  labs(x = "Degree of Hostility (1. Very Friendly, 10. Very Hostile)", 
+       y = "Comment Word Count", 
+       title = "Word Count of Comments vs Hostility of Comments")
+
+ggplot(exclude_no_comment, aes(x = Degree.of.Agreement.in.comment..1..Strongly.Disagree..10..Strongly.Agree.., 
+       y = exclude_no_comment$Comment.word.count...use.chatgpt., color = factor(subreddit))) +
+  geom_point() +
+  geom_smooth(se = FALSE, method = "lm", formula = y~x) +
+  labs(x = "Degree of Agreement (1. Strongly Disagree, 10. Strongly Agree)", 
+       y = "Comment Word Count", 
+       title = "Word Count of Comments vs Agreement of Comments")
+```
+
+
+increased agreement => less hostile
+more general subreddit decreases in hostility faster as agreement increases
+
+increased hostile => less words 
+increased agreement => more words
+cmu has a higher base level of word count for the comments
+
+
+
+
+
+```{r}
+
+# Create a data frame with the number of comments per post number
+# comments_df <- data.frame(Post_Number = unique(education$Post.Number),
+#                           Number_of_Comments = as.vector(table(education$Raw.comment)))
+
+comments_df <- education %>%
+  group_by(Post.Number) %>%
+  summarise(Raw.comment = n())
+
+comments_df
+
+# Replace specific post numbers with 0
+comments_df$Number_of_Comments[comments_df$Post_Number %in% c("1.2", "2.2")] <- 0
+
+comments_df <- transform(comments_df, Category = ifelse(grepl("^1\\.", Post_Number), "A2C", "CMU"))
+
+
+# Plot using ggplot2
+ggplot(comments_df, aes(x = Post_Number, y = Number_of_Comments, fill = )) +
+  geom_bar(stat = "identity") +
+  labs(x = "Post Number", y = "Number of Comments", title = "Number of Comments per Post")
+
+
+
+```
+
+
+
+
+
